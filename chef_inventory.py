@@ -8,7 +8,11 @@ import os
 import sys
 import re
 from time import time
-import ConfigParser
+from six import iteritems
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 try:
     import json
@@ -55,7 +59,7 @@ class ChefInventory:
             sys.exit(1)
 
     def read_settings(self):
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.ConfigParser()
         chef_default_ini_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'chef.ini')
         chef_ini_path = os.environ.get('CHEF_INI_PATH', chef_default_ini_path)
         config.read(chef_ini_path)
@@ -137,7 +141,7 @@ class ChefInventory:
         hostvars = {}
 
         data = self.read_cache()
-        for name, node in data.iteritems():
+        for name, node in iteritems(data):
             # make sure node is configured/working
             if ( "ipaddress" in node["automatic"].keys() ):
                 if name not in hostvars:
@@ -180,7 +184,7 @@ class ChefInventory:
                     groups[item].append(name)
 
         # remove any duplicates
-        groups = {key : list(set(items)) for (key, items) in groups.iteritems() }
+        groups = {key : list(set(items)) for (key, items) in iteritems(groups)}
 
         meta = { "_meta" : { "hostvars" : hostvars } }
         groups.update(meta)
